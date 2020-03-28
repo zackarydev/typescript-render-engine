@@ -1,0 +1,49 @@
+{
+  "name": "@zacktherrien/typescript-render-engine",
+  "version": "1.0.0",
+  "description": "A super simple and lightweight TypeScript rendering engine for making 2D JavaScript games.",
+  "keywords": [
+    "javascript",
+    "typescript",
+    "canvas",
+    "engine",
+    "game",
+    "2d",
+    "lightweight",
+    "simple"
+  ],
+  "homepage": "https://github.com/ZackTherrien/typescript-render-engine#readme",
+  "author": "Zack Therrien",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ZackTherrien/typescript-render-engine/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZackTherrien/typescript-render-engine.git"
+  },
+
+  "publishConfig": { 
+    "registry": "https://npm.pkg.github.com/" 
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  
+  "scripts": {
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && npm run lint && git add -A src",
+    "postversion": "git push && git push --tags",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.2",
+    "tslint": "^6.1.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.8.3"
+  }
+}
