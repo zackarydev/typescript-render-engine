@@ -1,4 +1,4 @@
-import { LayerType, IEntity, LayerIndex, RenderFunction, UpdateFunction } from '../types';
+import { LayerType, IEntity, LayerIndex, RenderLayerFunction, UpdateLayerFunction } from '../types';
 
 /**
  * An interface of all necessary functions and properties a rendering layer must have.
@@ -17,12 +17,12 @@ export interface IRenderingLayer {
 	/**
 	 * Render all entities in this layer to the context.
 	 */
-	render: RenderFunction;
+	render: RenderLayerFunction;
 
 	/**
 	 * Update all entities in this layer
 	 */
-	update: UpdateFunction;
+	update: UpdateLayerFunction;
 
 	/**
 	 * Get the rendering layer's canvas context.
@@ -42,7 +42,7 @@ export interface IRenderingLayer {
 	removeEntity(entity: IEntity): void;
 }
 
-export default class RenderingLayer implements IRenderingLayer {
+export class RenderingLayer implements IRenderingLayer {
 	/**
 	 * The z-index of the rendering layer
 	 */

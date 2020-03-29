@@ -1,10 +1,21 @@
 /**
- * The function used to render
+ * The function used to render a layer from the engine
+ */
+export type RenderLayerFunction = () => void;
+
+/**
+ * Function used to update a layer
+ */
+export type UpdateLayerFunction = (deltaTime: number) => void;
+
+
+/**
+ * The function used to render entities within a layer
  */
 export type RenderFunction = (context: CanvasRenderingContext2D) => void;
 
 /**
- * Function used to update
+ * Function used to update entities within a layer
  */
 export type UpdateFunction = (deltaTime: number) => void;
 
