@@ -1,6 +1,6 @@
 {
   "name": "@zacktherrien/typescript-render-engine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A super simple and lightweight TypeScript rendering engine for making 2D JavaScript games.",
   "keywords": [
     "javascript",
@@ -22,14 +22,14 @@
     "type": "git",
     "url": "git+https://github.com/ZackTherrien/typescript-render-engine.git"
   },
-
-  "publishConfig": { 
-    "registry": "https://npm.pkg.github.com/" 
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint",
