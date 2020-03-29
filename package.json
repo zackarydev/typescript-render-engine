@@ -1,6 +1,6 @@
 {
   "name": "@zacktherrien/typescript-render-engine",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A super simple and lightweight TypeScript rendering engine for making 2D JavaScript games.",
   "keywords": [
     "javascript",

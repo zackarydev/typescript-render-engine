@@ -8,7 +8,6 @@ export type RenderLayerFunction = () => void;
  */
 export type UpdateLayerFunction = (deltaTime: number) => void;
 
-
 /**
  * The function used to render entities within a layer
  */
