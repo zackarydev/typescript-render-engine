@@ -15,6 +15,16 @@ export interface IRenderingLayer {
 	readonly layerType: LayerType;
 
 	/**
+	 * Width of the document.
+	 */
+	readonly width: number;
+
+	/**
+	 * Height of the document
+	 */
+	readonly height: number;
+
+	/**
 	 * Render all entities in this layer to the context.
 	 */
 	render: RenderLayerFunction;
@@ -61,17 +71,17 @@ export class RenderingLayer implements IRenderingLayer {
 	/**
 	 * Width of the document.
 	 */
-	width: number;
+	readonly width: number;
 
 	/**
 	 * Height of the document
 	 */
-	height: number;
+	readonly height: number;
 
 	/**
 	 * List of entities that are part of this rendering layer.
 	 */
-	entities: IEntity[];
+	private entities: IEntity[];
 
 	/**
 	 * Construct a new layer that will hold a list of entityes or updaters.
