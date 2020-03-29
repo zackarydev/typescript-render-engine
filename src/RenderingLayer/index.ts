@@ -98,8 +98,8 @@ export class RenderingLayer implements IRenderingLayer {
 			this.addEntity(entity);
 		}
 
-		this.width = document.body.clientWidth;
-		this.height = document.body.clientHeight;
+		this.width = document.body.clientWidth + 1;
+		this.height = document.body.clientHeight + 1;
 
 		const canvas = document.createElement('canvas');
 		canvas.width = this.width;
@@ -116,7 +116,7 @@ export class RenderingLayer implements IRenderingLayer {
 			throw new Error('Could not initialize canvas 2D context.');
 		}
 		this.context = context;
-		this.context.translate(0.5, 0.5); // disables anti-aliasing
+		this.context.translate(-0.5, -0.5); // disables anti-aliasing
 	}
 
 	/**
