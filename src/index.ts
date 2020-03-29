@@ -126,3 +126,6 @@ export default class Engine implements IEngine {
 		}
 	}
 }
+
+export * from './types';
+export * from './RenderingLayer';
