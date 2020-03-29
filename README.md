@@ -55,7 +55,7 @@ npm install @zacktherrien/typescript-render-engine
 
 ## Examples
 
-* (Square moving randomly)[./examples/square.ts]
+* [Bouncing Square](https://zacktherrien.github.io/typescript-render-engine/squares/index.html)
 
 ## Documentation
 

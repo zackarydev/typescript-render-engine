@@ -41,7 +41,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "examples": "parcel examples/index.html --open",
-    "build-examples": "parcel build examples/index.html --out-dir ./dist-examples/ --public-url ./dist-examples/",
+    "build-examples": "parcel build examples/index.html --out-dir ./dist-examples/ --public-url /typescript-render-engine",
     "publish-examples": "npm run build-examples && gh-pages -d dist-examples"
   },
   "devDependencies": {
