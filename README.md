@@ -1,7 +1,7 @@
 # TypeScript Render Engine
 > A super simple and lightweight TypeScript rendering engine for making 2D JavaScript games using HTML Canvases.
 
-![GitHub package.json version](https://img.shields.io/github/package-json/v/zacktherrien/typescript-render-engine?style=for-the-badge)
+[![GitHub package.json version](https://img.shields.io/github/package-json/v/zacktherrien/typescript-render-engine?style=for-the-badge)](https://github.com/ZackTherrien/typescript-render-engine/releases)
 
 [Usage](#usage) | [Installation](#installation) | [Examples](#examples) | [Documentation](#documentation)
 
