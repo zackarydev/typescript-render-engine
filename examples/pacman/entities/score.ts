@@ -10,8 +10,8 @@ export default class Score implements IEntity {
 
     constructor(layer: IRenderingLayer) {
         this.layer = layer;
-        this.width = layer.width;
-        this.height = layer.height;
+        this.width = layer.getWidth();
+        this.height = layer.getHeight();
 
         this.score = 0;
     }

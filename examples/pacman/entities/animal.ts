@@ -1,5 +1,6 @@
 import { IEntity, IRenderingLayer } from '../../../src';
 
+// Dog and Cat image from: https://www.petbacker.com/blog/how-to/tips-on-how-to-make-a-dog-and-cat-become-friends
 import * as DogCatCoveryJpg from '../dog-and-cat-cover.jpg';
 
 import IManager from './manager';

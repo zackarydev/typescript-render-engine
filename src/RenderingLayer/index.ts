@@ -1,4 +1,4 @@
-import { LayerType, IEntity, LayerIndex, RenderLayerFunction, UpdateLayerFunction } from '../types';
+import { LayerType, IEntity, LayerIndex, RenderLayerFunction, UpdateLayerFunction, ResizeMethod } from '../types';
 
 /**
  * An interface of all necessary functions and properties a rendering layer must have.
@@ -15,16 +15,6 @@ export interface IRenderingLayer {
 	readonly layerType: LayerType;
 
 	/**
-	 * Width of the document.
-	 */
-	readonly width: number;
-
-	/**
-	 * Height of the document
-	 */
-	readonly height: number;
-
-	/**
 	 * Render all entities in this layer to the context.
 	 */
 	render: RenderLayerFunction;
@@ -38,6 +28,31 @@ export interface IRenderingLayer {
 	 * Get the rendering layer's canvas context.
 	 */
 	getContext: () => CanvasRenderingContext2D;
+
+	/**
+	 * Get the width of the layer
+	 */
+	getWidth: () => number;
+
+	/**
+	 * Get the height of the layer
+	 */
+	getHeight: () => number;
+
+	/**
+	 * Get the x position of the layer
+	 */
+	getX: () => number;
+
+	/**
+	 * Get the y position of the layer
+	 */
+	getY: () => number;
+
+	/**
+	 * Resize the layer 
+	 */
+	resize: (width: number, height: number, resizeMethod: ResizeMethod) => void;
 
 	/**
 	 * Add a new entity to this rendering layer
@@ -69,14 +84,24 @@ export class RenderingLayer implements IRenderingLayer {
 	readonly context: CanvasRenderingContext2D;
 
 	/**
-	 * Width of the document.
+	 * Width of the layer in the document
 	 */
-	readonly width: number;
+	private width: number;
 
 	/**
-	 * Height of the document
+	 * Height of the layer in the document
 	 */
-	readonly height: number;
+	private height: number;
+
+	/**
+	 * X Position of the layer
+	 */
+	private x: number;
+
+	/**
+	 * X Position of the layer
+	 */
+	private y: number;
 
 	/**
 	 * List of entities that are part of this rendering layer.
@@ -89,34 +114,71 @@ export class RenderingLayer implements IRenderingLayer {
 	 * @param layerType Whether the layer elements will be updated on every frame
 	 * @param entity An optional, default first entity.
 	 */
-	constructor(layerIndex: LayerIndex, layerType: LayerType, entity?: IEntity) {
+	constructor(layerIndex: LayerIndex, layerType: LayerType, initialWidth?: number, initialHeight?: number, initialX: number = 0, initialY: number = 0) {
 		this.layerIndex = layerIndex;
 		this.layerType = layerType;
 
 		this.entities = [];
-		if (entity) {
-			this.addEntity(entity);
-		}
 
-		this.width = document.body.clientWidth + 1;
-		this.height = document.body.clientHeight + 1;
+		this.width = initialWidth === undefined ? (document.body.clientWidth + 1) : initialWidth;
+		this.height = initialHeight === undefined ? (document.body.clientHeight + 1) : initialHeight;
+		this.x = initialX;
+		this.y = initialY;
 
 		const canvas = document.createElement('canvas');
-		canvas.width = this.width;
-		canvas.height = this.height;
-		canvas.style.top = '0';
-		canvas.style.left = '0';
 		canvas.style.position = 'absolute';
 		canvas.style.zIndex = `${this.layerIndex}`;
 		canvas.style.display = 'inline';
 		document.body.appendChild(canvas);
-
+		
 		const context = canvas.getContext('2d');
 		if (!context) {
 			throw new Error('Could not initialize canvas 2D context.');
 		}
 		this.context = context;
 		this.context.translate(-0.5, -0.5); // disables anti-aliasing
+		this.resize(this.width, this.height);
+		this.setPosition(this.x, this.y);
+	}
+
+	/**
+	 * Change the size of the layer.
+	 * @param newWidth The new width of the layer 
+	 * @param newHeight The new height of the layer
+	 * @param resizeMethod How should we resize the layer: from the center, or from the top-left?
+	 */
+	resize(newWidth: number, newHeight: number, resizeMethod: ResizeMethod = ResizeMethod.FROM_ORIGIN) {
+		let xOffset = 0;
+		let yOffset = 0;
+		if(resizeMethod === ResizeMethod.FROM_CENTER) {
+			xOffset = (this.width - newWidth) / 2;
+			yOffset = (this.height - newHeight) / 2;
+		}
+
+		this.width = newWidth;
+		this.height = newHeight;
+
+		this.context.canvas.width = this.width;
+		this.context.canvas.height = this.height;
+
+		this.setPosition(this.x + xOffset, this.y + yOffset);
+	}
+
+	/**
+	 * Change the position of this layer
+	 * @param newX the x position where 0 is the left of the document body.
+	 * @param newY the y position where 0 is the top of the document
+	 */
+	setPosition(newX: number, newY: number) {
+		this.x = newX;
+		this.y = newY;
+
+		if(!this._isLayerWithinBounds()) {
+			throw new Error('Cannot position and resize a layer outside of document body.');
+		}
+
+		this.context.canvas.style.left = `${this.x}px`;
+		this.context.canvas.style.top = `${this.y}px`;
 	}
 
 	/**
@@ -142,6 +204,34 @@ export class RenderingLayer implements IRenderingLayer {
 		if (renderersIdx !== -1) {
 			this.entities.splice(renderersIdx, 1);
 		}
+	}
+
+	/**
+	 * Get the width of the layer
+	 */
+	getWidth() {
+		return this.width;
+	}
+
+	/**
+	 * Get the height of the layer
+	 */
+	getHeight() {
+		return this.height;
+	}
+
+	/**
+	 * Get the x position of the layer
+	 */
+	getX() {
+		return this.x;
+	}
+
+	/**
+	 * Get the y position of the layer
+	 */
+	getY() {
+		return this.y;
 	}
 
 	/**
@@ -188,7 +278,7 @@ export class RenderingLayer implements IRenderingLayer {
 	 * Returns true if the entity has a render function.
 	 * @param entity
 	 */
-	_entityIsRenderable(entity: IEntity) {
+	private _entityIsRenderable(entity: IEntity) {
 		return Boolean(entity.render);
 	}
 
@@ -196,7 +286,19 @@ export class RenderingLayer implements IRenderingLayer {
 	 * Returns true if the entity has an update function.
 	 * @param entity
 	 */
-	_entityIsUpdatable(entity: IEntity) {
+	private _entityIsUpdatable(entity: IEntity) {
 		return Boolean(entity.update);
+	}
+
+	/**
+	 * Is the layer within the document bounds.
+	 */
+	private _isLayerWithinBounds() {
+		return (
+			((this.width + this.x) > document.body.clientWidth) ||
+			((this.height + this.y) > document.body.clientHeight) ||
+			(this.x < 0) ||
+			(this.y < 0)
+		);
 	}
 }

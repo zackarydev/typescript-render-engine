@@ -53,9 +53,9 @@ class Square implements IEntity {
         this.dy = 1;
     }
 
-    isXOutOfBounds = () => this.x < 0 || (this.x + SQUARE_WIDTH) > this.layer.width;
+    isXOutOfBounds = () => this.x < 0 || (this.x + SQUARE_WIDTH) > this.layer.getWidth();
 
-    isYOutOfBounds = () => this.y < 0 || (this.y + SQUARE_HEIGHT) > this.layer.height;
+    isYOutOfBounds = () => this.y < 0 || (this.y + SQUARE_HEIGHT) > this.layer.getHeight();
 
     update(deltaTime: number) {
         const dist = SQUARE_SPEED * deltaTime;
@@ -79,7 +79,7 @@ const engine = new Engine();
 
 // Create the background layer
 const backgroundLayer = new RenderingLayer(LayerIndex.BACKGROUND, LayerType.STATIC);
-const backgroundEntity = new Background(backgroundLayer.width, backgroundLayer.height);
+const backgroundEntity = new Background(backgroundLayer.getWidth(), backgroundLayer.getHeight());
 backgroundLayer.addEntity(backgroundEntity);
 
 // Register the layer background.
