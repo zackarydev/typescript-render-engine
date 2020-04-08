@@ -81,7 +81,7 @@ export class RenderingLayer implements IRenderingLayer {
 	/**
 	 * List of entities that are part of this rendering layer.
 	 */
-	private entities: IEntity[];
+	public entities: IEntity[];
 
 	/**
 	 * Construct a new layer that will hold a list of entityes or updaters.
