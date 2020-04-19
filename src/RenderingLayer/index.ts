@@ -50,7 +50,7 @@ export interface IRenderingLayer {
 	getY: () => number;
 
 	/**
-	 * Resize the layer 
+	 * Resize the layer
 	 */
 	resize: (width: number, height: number, resizeMethod: ResizeMethod) => void;
 
@@ -114,14 +114,21 @@ export class RenderingLayer implements IRenderingLayer {
 	 * @param layerType Whether the layer elements will be updated on every frame
 	 * @param entity An optional, default first entity.
 	 */
-	constructor(layerIndex: LayerIndex, layerType: LayerType, initialWidth?: number, initialHeight?: number, initialX: number = 0, initialY: number = 0) {
+	constructor(
+		layerIndex: LayerIndex,
+		layerType: LayerType,
+		initialWidth?: number,
+		initialHeight?: number,
+		initialX: number = 0,
+		initialY: number = 0,
+	) {
 		this.layerIndex = layerIndex;
 		this.layerType = layerType;
 
 		this.entities = [];
 
-		this.width = initialWidth === undefined ? (document.body.clientWidth + 1) : initialWidth;
-		this.height = initialHeight === undefined ? (document.body.clientHeight + 1) : initialHeight;
+		this.width = initialWidth === undefined ? document.body.clientWidth + 1 : initialWidth;
+		this.height = initialHeight === undefined ? document.body.clientHeight + 1 : initialHeight;
 		this.x = initialX;
 		this.y = initialY;
 
@@ -130,7 +137,7 @@ export class RenderingLayer implements IRenderingLayer {
 		canvas.style.zIndex = `${this.layerIndex}`;
 		canvas.style.display = 'inline';
 		document.body.appendChild(canvas);
-		
+
 		const context = canvas.getContext('2d');
 		if (!context) {
 			throw new Error('Could not initialize canvas 2D context.');
@@ -143,14 +150,14 @@ export class RenderingLayer implements IRenderingLayer {
 
 	/**
 	 * Change the size of the layer.
-	 * @param newWidth The new width of the layer 
+	 * @param newWidth The new width of the layer
 	 * @param newHeight The new height of the layer
 	 * @param resizeMethod How should we resize the layer: from the center, or from the top-left?
 	 */
 	resize(newWidth: number, newHeight: number, resizeMethod: ResizeMethod = ResizeMethod.FROM_ORIGIN) {
 		let xOffset = 0;
 		let yOffset = 0;
-		if(resizeMethod === ResizeMethod.FROM_CENTER) {
+		if (resizeMethod === ResizeMethod.FROM_CENTER) {
 			xOffset = (this.width - newWidth) / 2;
 			yOffset = (this.height - newHeight) / 2;
 		}
@@ -173,7 +180,7 @@ export class RenderingLayer implements IRenderingLayer {
 		this.x = newX;
 		this.y = newY;
 
-		if(!this._isLayerWithinBounds()) {
+		if (!this._isLayerWithinBounds()) {
 			throw new Error('Cannot position and resize a layer outside of document body.');
 		}
 
@@ -295,10 +302,10 @@ export class RenderingLayer implements IRenderingLayer {
 	 */
 	private _isLayerWithinBounds() {
 		return (
-			((this.width + this.x) > document.body.clientWidth) ||
-			((this.height + this.y) > document.body.clientHeight) ||
-			(this.x < 0) ||
-			(this.y < 0)
+			this.width + this.x > document.body.clientWidth ||
+			this.height + this.y > document.body.clientHeight ||
+			this.x < 0 ||
+			this.y < 0
 		);
 	}
 }
