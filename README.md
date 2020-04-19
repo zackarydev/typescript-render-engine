@@ -94,7 +94,7 @@ npm install @zacktherrien/typescript-render-engine
 * `getHeight(): number` Get the height of the layer
 * `getX(): number` Get the x position of the layer, from the left side of the dom.
 * `getY(): number` Get the y position of the layer, from the top of the dom.
-* `resize(width: number, height: number, resizeMethod: ResizeMethod = ResizeMethod.FROM_ORIGIN): number` Get the y position of the layer, from the top of the dom.
+* `resize(width: number, height: number, resizeMethod: ResizeMethod = ResizeMethod.FROM_ORIGIN): number` Change the size of the layer.
     * `width` The new width of the layer
     * `height` The new height of the layer
     * `resizeMethod` How the resize will be performed, from the origin or from the center of layer.
