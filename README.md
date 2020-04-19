@@ -53,9 +53,10 @@ Then to install:
 npm install @zacktherrien/typescript-render-engine
 ```
 
-## Examples
+## [Examples](https://zacktherrien.github.io/typescript-render-engine)
 
 * [Bouncing Square](https://zacktherrien.github.io/typescript-render-engine/squares/index.html)
+* [Pacman](https://zacktherrien.github.io/typescript-render-engine/pacman/index.html)
 
 ## Documentation
 
