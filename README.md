@@ -76,9 +76,6 @@ npm install @zacktherrien/typescript-render-engine
 ###### Properties
 * `readonly layerIndex: LayerIndex` number representing the zindex of the layer
 * `readonly layerType: LayerType` whether a layer is `STATIC` or `DYNAMIC`
-* `readonly width: number` Width of the layer
-* `readonly height: number` Height of the layer
-* `private entities: IEntity[]` List of all entities
 
 ###### Methods
 * `constructor(layerIndex: LayerIndex, layerType: LayerType, entity?: Entity)` Creates a rendering layer.
@@ -93,6 +90,17 @@ npm install @zacktherrien/typescript-render-engine
 * `update(deltaTime: number)` Updates all entities sequentially in the order they were added.
     * `deltaTime` Time (in `ms`) since the last frame was rendered
 * `render()` Renders all the entities in this layer sequentially in the order they were added.
+* `getWidth(): number` Get the width of the layer
+* `getHeight(): number` Get the height of the layer
+* `getX(): number` Get the x position of the layer, from the left side of the dom.
+* `getY(): number` Get the y position of the layer, from the top of the dom.
+* `resize(width: number, height: number, resizeMethod: ResizeMethod = ResizeMethod.FROM_ORIGIN): number` Get the y position of the layer, from the top of the dom.
+    * `width` The new width of the layer
+    * `height` The new height of the layer
+    * `resizeMethod` How the resize will be performed, from the origin or from the center of layer.
+* `setPosition(x: number, height: number)` Change the position of the layer.
+    * `x` the new x position of the layer.
+    * `y` the new y position of the layer.
 
 ### Types
 
@@ -104,6 +112,9 @@ npm install @zacktherrien/typescript-render-engine
 * `LayerType` Enum representing the type of layer.
     * `STATIC` A static layer will **not** be updated or re-rendered every frame.
     * `DYNAMIC` A dynamic layer will be updated then rendered every frame.
+* `ResizeMethod` Enum representing the resizing strategy of a layer
+    * `FROM_ORIGIN` Resize the layer conserving the (0,0) point at the same position in the screen.
+    * `FROM_CENTER` Resize the layer conserving the center point at the same position in the screen.
 
 #### Recommended constants:
 ```
