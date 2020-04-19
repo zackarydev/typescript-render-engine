@@ -14,7 +14,7 @@ const animalManager = new Manager<Animal>();
 
 // Create the background layer
 const backgroundLayer = new RenderingLayer(LayerIndex.BACKGROUND, LayerType.STATIC);
-const backgroundEntity = new Background(backgroundLayer.width, backgroundLayer.height);
+const backgroundEntity = new Background(backgroundLayer.getWidth(), backgroundLayer.getHeight());
 backgroundLayer.addEntity(backgroundEntity);
 
 // Register the layer background.

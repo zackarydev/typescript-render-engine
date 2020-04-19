@@ -44,7 +44,7 @@ export default class PacMan implements IEntity {
         this.animalManager = animalManager;
 
         this.radius = BODY_RADIUS;
-        this.x = layer.width/2;
+        this.x = layer.getWidth()/2 + layer.getX(); // center in the layer.
         this.y = pCy;
         this.orientation = 'left';
 
@@ -62,7 +62,7 @@ export default class PacMan implements IEntity {
         this.eyeCYdelta = 50 * Math.sin(0.3*Math.PI);
     }
 
-    isOutOfBounds = (x: number) => (x + this.radius) > this.layer.width || (x - this.radius) < 0;
+    isOutOfBounds = (x: number) => (x + this.radius) > this.layer.getWidth() || (x - this.radius) < this.layer.getX();
 
     changeDirection(directionKey: 'left' | 'right') {
         if(directionKey === 'left') {
