@@ -25,6 +25,18 @@ export interface IEngine {
 	 * @param layer Layer to add to the engine
 	 */
 	registerLayer(layer: IRenderingLayer): void;
+
+	/**
+	 * Set the pause handler of the engine. 
+	 * @param handler Function to be called when the document changes visiblity to hidden
+	 */
+	registerPauseHandler(handler: Function): void;
+
+	/**
+	 * Set the resume handler of the engine. 
+	 * @param handler Function to be called when the document changes visiblity to visible
+	 */
+	registerResumeHandler(handler: Function): void;
 }
 
 export default class Engine implements IEngine {
@@ -55,6 +67,16 @@ export default class Engine implements IEngine {
 	 */
 	private lastFrameRenderedTime: DOMHighResTimeStamp | null;
 
+	/**
+	 * The handler function called when the page visibility is changed to hidden.
+	 */
+	private pauseHandler: Function | null;
+	
+	/**
+	 * The handler function called when the page visibility is changed to visible.
+	 */
+	private resumeHandler: Function | null;
+
 	constructor() {
 		this.staticLayers = [];
 		this.dynamicLayers = [];
@@ -63,10 +85,17 @@ export default class Engine implements IEngine {
 		this.shouldRender = true;
 		this.lastFrameRenderedTime = null;
 		this.renderingId = null;
+		this.pauseHandler = null;
+		this.resumeHandler = null;
 
 		// rebinding.
 		this.requestFrameA = this.requestFrameA.bind(this);
 		this.requestFrameB = this.requestFrameB.bind(this);
+		this.__handleVisibilityChange__ = this.__handleVisibilityChange__.bind(this);
+		this.__registerEvents__ = this.__registerEvents__.bind(this);
+
+		// event handling
+		this.__registerEvents__();
 	}
 
 	getLayer(layerIndex: LayerIndex, layerType: LayerType) {
@@ -85,8 +114,25 @@ export default class Engine implements IEngine {
 		}
 	}
 
+	/**
+	 * Register the pause handler to be called once the engine becomes hidden
+	 * @param handler function called once pause is invoked.
+	 */
+	registerPauseHandler(handler: Function) {
+		this.pauseHandler = handler;
+	}
+
+	/**
+	 * Register the resume handler to be called once the engine becomes visible again
+	 * @param handler function called once resume is invoked.
+	 */
+	registerResumeHandler(handler: Function) {
+		this.resumeHandler = handler;
+	}
+
 	start() {
 		this.shouldRender = true; // say we want to animate.
+		this.lastFrameRenderedTime = null;
 		this.renderingId = window.requestAnimationFrame(this.requestFrameA);
 	}
 
@@ -97,7 +143,8 @@ export default class Engine implements IEngine {
 		}
 	}
 
-	requestFrameA(timestamp: DOMHighResTimeStamp) {
+
+	private requestFrameA(timestamp: DOMHighResTimeStamp) {
 		this.render(timestamp);
 
 		if (this.shouldRender) {
@@ -105,7 +152,7 @@ export default class Engine implements IEngine {
 		}
 	}
 
-	requestFrameB(timestamp: DOMHighResTimeStamp) {
+	private requestFrameB(timestamp: DOMHighResTimeStamp) {
 		this.render(timestamp);
 
 		if (this.shouldRender) {
@@ -124,5 +171,43 @@ export default class Engine implements IEngine {
 			this.dynamicLayers[i].update(deltaTime);
 			this.dynamicLayers[i].render();
 		}
+	}
+
+	/**
+	 * Handles page visibility change events.
+	 */
+	private __handleVisibilityChange__() {
+		if (document.visibilityState === 'hidden') {
+			if(!this.shouldRender) {
+				// if we are not rendering, do not handle visiblity change.
+				return;
+			}
+			if (this.pauseHandler) {
+				// if we have a pause handler defined, call it.
+				this.pauseHandler();
+			}
+			// if the document becomes hidden, stop the rendering.
+			this.stop();
+		} else if(document.visibilityState === 'visible') {
+			if (!this.renderingId) {
+				// if we never rendered, then do not handle this.
+				return;
+			}
+			// if there is no pause handler defined, restart our rendering.
+			// this ensures a implementers have the control over unpausing.
+			// For the engine to automatically restart, this means the engine must have been started manually first.
+			if(this.resumeHandler) {
+				this.resumeHandler();
+			} else {
+				this.start();
+			}
+		}
+	}
+
+	/**
+	 * Register the events used by the engine.
+	 */
+	private __registerEvents__() {
+		document.addEventListener("visibilitychange", this.__handleVisibilityChange__);
 	}
 }
