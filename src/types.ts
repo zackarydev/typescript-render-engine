@@ -32,16 +32,6 @@ export interface IEntity {
 export type LayerIndex = number;
 
 /**
- * Enum for the layer types.
- * STATIC will not re-render every frame.
- * DYNAMIC will update and re-render every frame.
- */
-export enum LayerType {
-	STATIC,
-	DYNAMIC,
-}
-
-/**
  * Resize strategy types for the layer resize method.
  * FROM_ORIGIN: will resize the layer but will also make sure the center stays at the same position
  * FROM_CENTER: will resize the layer but will also make sure the top-left stays at the same position

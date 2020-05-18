@@ -1,4 +1,4 @@
-import Engine, { RenderingLayer, LayerType } from '../../src';
+import Engine, { StaticLayer, DynamicLayer } from '../../src';
 
 import { LayerIndex, pCx, pCy, ANIMAL_SPREAD_DISTANCE } from './constants';
 
@@ -13,18 +13,17 @@ const engine = new Engine();
 const animalManager = new Manager<Animal>();
 
 // Create the background layer
-const backgroundLayer = new RenderingLayer(LayerIndex.BACKGROUND, LayerType.STATIC);
+const backgroundLayer = new StaticLayer(LayerIndex.BACKGROUND);
 const backgroundEntity = new Background(backgroundLayer.getWidth(), backgroundLayer.getHeight());
 backgroundLayer.addEntity(backgroundEntity);
 
 // Register the layer background.
 engine.registerLayer(backgroundLayer);
 
-backgroundLayer.render();
-
+backgroundLayer.allowRenderOnNextFrame();
 
 // Create the animals
-const animalsLayer = new RenderingLayer(LayerIndex.ANIMALS, LayerType.DYNAMIC);
+const animalsLayer = new DynamicLayer(LayerIndex.ANIMALS);
 // add 6 animals.
 for (let i = 0; i<6; i++) {
     animalManager.add(new Animal(pCx + ANIMAL_SPREAD_DISTANCE * i, pCy, animalsLayer, animalManager));
@@ -34,18 +33,18 @@ for (let i = 0; i<6; i++) {
 engine.registerLayer(animalsLayer);
 
 // Create the score layer
-const scoreLayer = new RenderingLayer(LayerIndex.SCORE, LayerType.STATIC);
+const scoreLayer = new StaticLayer(LayerIndex.SCORE);
 const scoreEntity = new Score(scoreLayer);
 scoreLayer.addEntity(scoreEntity);
 
 // Register the layer score.
 engine.registerLayer(scoreLayer);
 
-scoreLayer.render();
+scoreLayer.allowRenderOnNextFrame();
 
 
 // Create the pacman
-const pacManLayer = new RenderingLayer(LayerIndex.PACMAN, LayerType.DYNAMIC);
+const pacManLayer = new DynamicLayer(LayerIndex.PACMAN);
 const pacMan = new PacMan(pacManLayer, animalManager, scoreEntity);
 pacManLayer.addEntity(pacMan);
 
