@@ -1,4 +1,4 @@
-import { LayerType, IEntity, LayerIndex, RenderLayerFunction, UpdateLayerFunction, ResizeMethod } from '../types';
+import { IEntity, LayerIndex, RenderLayerFunction, UpdateLayerFunction, ResizeMethod } from '../types';
 
 /**
  * An interface of all necessary functions and properties a rendering layer must have.
@@ -8,11 +8,6 @@ export interface IRenderingLayer {
 	 * The z-index of the rendering layer.
 	 */
 	readonly layerIndex: LayerIndex;
-
-	/**
-	 * Whether the layer is dynamic or static
-	 */
-	readonly layerType: LayerType;
 
 	/**
 	 * Render all entities in this layer to the context.
@@ -67,16 +62,11 @@ export interface IRenderingLayer {
 	removeEntity(entity: IEntity): void;
 }
 
-export class RenderingLayer implements IRenderingLayer {
+export abstract class RenderingLayer implements IRenderingLayer {
 	/**
 	 * The z-index of the rendering layer
 	 */
 	readonly layerIndex: LayerIndex;
-
-	/**
-	 * Whether the layer is dynamic or static.
-	 */
-	readonly layerType: LayerType;
 
 	/**
 	 * The canvas' 2D rendering context.
@@ -109,6 +99,12 @@ export class RenderingLayer implements IRenderingLayer {
 	private entities: IEntity[];
 
 	/**
+	 * To prevent re-allocation of variables after each render/update loop,
+	 * we create an entity counter variable to reuse.
+	 */
+	private entityCounter: number;
+
+	/**
 	 * Construct a new layer that will hold a list of entityes or updaters.
 	 * @param layerIndex Number representing the z-index of the layer on the screen.
 	 * @param layerType Whether the layer elements will be updated on every frame
@@ -116,16 +112,15 @@ export class RenderingLayer implements IRenderingLayer {
 	 */
 	constructor(
 		layerIndex: LayerIndex,
-		layerType: LayerType,
 		initialWidth?: number,
 		initialHeight?: number,
 		initialX: number = 0,
 		initialY: number = 0,
 	) {
 		this.layerIndex = layerIndex;
-		this.layerType = layerType;
 
 		this.entities = [];
+		this.entityCounter = 0;
 
 		this.width = initialWidth === undefined ? document.body.clientWidth + 1 : initialWidth;
 		this.height = initialHeight === undefined ? document.body.clientHeight + 1 : initialHeight;
@@ -193,11 +188,8 @@ export class RenderingLayer implements IRenderingLayer {
 	 * @param renderElement The entity that will be added to this layer
 	 */
 	addEntity(entity: IEntity) {
-		if (!this._entityIsRenderable(entity)) {
-			throw new Error('All entities must have a render function.');
-		}
-		if (this.layerType === LayerType.DYNAMIC && !this._entityIsUpdatable(entity)) {
-			throw new Error('All entities of dynamic layers must have an updater function.');
+		if (!this._isEntityValid(entity)) {
+			throw new Error('Invalid entity cannot be added to this layer.');
 		}
 		this.entities.push(entity);
 	}
@@ -262,12 +254,9 @@ export class RenderingLayer implements IRenderingLayer {
 	 * @param deltaTime Time since the last render in ms.
 	 */
 	update(deltaTime: number) {
-		if (this.layerType !== LayerType.DYNAMIC) {
-			return;
-		}
-		for (let i = 0; i < this.entities.length; i++) {
+		for (this.entityCounter = 0; this.entityCounter < this.entities.length; this.entityCounter++) {
 			// We can force the entity's update function because it is checked in the `addEntity` function.
-			this.entities[i].update!(deltaTime);
+			this.entities[this.entityCounter].update?.(deltaTime);
 		}
 	}
 
@@ -276,16 +265,22 @@ export class RenderingLayer implements IRenderingLayer {
 	 */
 	render() {
 		this.clear();
-		for (let i = 0; i < this.entities.length; i++) {
-			this.entities[i].render(this.context);
+		for (this.entityCounter = 0; this.entityCounter < this.entities.length; this.entityCounter++) {
+			this.entities[this.entityCounter].render(this.context);
 		}
 	}
+
+	/**
+	 * Returns true if the entity is valid for the given layer.
+	 * @param entity
+	 */
+	abstract _isEntityValid(entity: IEntity): boolean;
 
 	/**
 	 * Returns true if the entity has a render function.
 	 * @param entity
 	 */
-	private _entityIsRenderable(entity: IEntity) {
+	protected _entityIsRenderable(entity: IEntity) {
 		return Boolean(entity.render);
 	}
 
@@ -293,7 +288,7 @@ export class RenderingLayer implements IRenderingLayer {
 	 * Returns true if the entity has an update function.
 	 * @param entity
 	 */
-	private _entityIsUpdatable(entity: IEntity) {
+	protected _entityIsUpdatable(entity: IEntity) {
 		return Boolean(entity.update);
 	}
 

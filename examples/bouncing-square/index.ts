@@ -1,4 +1,4 @@
-import Engine, { RenderingLayer, LayerType, IEntity, IRenderingLayer } from '../../src';
+import Engine, { IEntity, IRenderingLayer, StaticLayer, DynamicLayer } from '../../src';
 
 const enum Colors {
     BACKGROUND = '#567D46',
@@ -78,7 +78,7 @@ class Square implements IEntity {
 const engine = new Engine();
 
 // Create the background layer
-const backgroundLayer = new RenderingLayer(LayerIndex.BACKGROUND, LayerType.STATIC);
+const backgroundLayer = new StaticLayer(LayerIndex.BACKGROUND);
 const backgroundEntity = new Background(backgroundLayer.getWidth(), backgroundLayer.getHeight());
 backgroundLayer.addEntity(backgroundEntity);
 
@@ -86,10 +86,10 @@ backgroundLayer.addEntity(backgroundEntity);
 engine.registerLayer(backgroundLayer);
 
 // Since the background is static, it must be rendered manually.
-backgroundLayer.render();
+backgroundLayer.allowRenderOnNextFrame();
 
 // Create the square
-const squareLayer = new RenderingLayer(LayerIndex.SQUARE, LayerType.DYNAMIC);
+const squareLayer = new DynamicLayer(LayerIndex.SQUARE);
 const square = new Square(squareLayer);
 squareLayer.addEntity(square);
 

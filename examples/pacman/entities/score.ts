@@ -1,14 +1,14 @@
-import { IEntity, IRenderingLayer } from "../../../src";
+import { IEntity, IStaticLayer } from "../../../src";
 import { Colors } from "../constants";
 
 export default class Score implements IEntity {
-    layer: IRenderingLayer;
+    layer: IStaticLayer;
 
     width: number;
     height: number;
     score: number;
 
-    constructor(layer: IRenderingLayer) {
+    constructor(layer: IStaticLayer) {
         this.layer = layer;
         this.width = layer.getWidth();
         this.height = layer.getHeight();
@@ -18,7 +18,7 @@ export default class Score implements IEntity {
 
     updateScore(newScore) {
         this.score = newScore;
-        this.layer.render();
+        this.layer.allowRenderOnNextFrame();
     }
 
     render(context: CanvasRenderingContext2D) {

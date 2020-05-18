@@ -1,6 +1,6 @@
 import { IRenderingLayer } from '../RenderingLayer';
 
-import { LayerType, LayerIndex } from '../types';
+import { LayerIndex } from '../types';
 
 export interface IEngine {
 	/**
@@ -18,7 +18,7 @@ export interface IEngine {
 	 * @param layerIndex The z-index of a layer
 	 * @param layerType The layer type of the layer wanted
 	 */
-	getLayer(layerIndex: LayerIndex, layerType: LayerType): IRenderingLayer | null;
+	getLayer(layerIndex: LayerIndex): IRenderingLayer | null;
 
 	/**
 	 * Add a layer to the engine.
@@ -29,16 +29,9 @@ export interface IEngine {
 
 export default class Engine implements IEngine {
 	/**
-	 * Holds all static layers
-	 * Static layers are only re-rendered when told.
+	 * Holds all layers
 	 */
-	private staticLayers: IRenderingLayer[];
-
-	/**
-	 * Holds all dynamic layers.
-	 * Dynamic layers are re-rendered every frame.
-	 */
-	private dynamicLayers: IRenderingLayer[];
+	private layers: IRenderingLayer[];
 
 	/**
 	 * Variable to know if we should keep rendering.
@@ -55,34 +48,39 @@ export default class Engine implements IEngine {
 	 */
 	private lastFrameRenderedTime: DOMHighResTimeStamp | null;
 
+	/**
+	 * To prevent re-allocation of variables after each render/update loop,
+	 * we create an layer counter variable to reuse.
+	 */
+	private layerCounter: number;
+
+	/**
+	 * To prevent re-allocation of variables after each render/update loop,
+	 * we create a variable to keep track of the current delta time.
+	 */
+	private currentDeltaTime: number;
+
 	constructor() {
-		this.staticLayers = [];
-		this.dynamicLayers = [];
+		this.layers = [];
+		this.layerCounter = 0;
 
 		// animation control.
 		this.shouldRender = true;
 		this.lastFrameRenderedTime = null;
 		this.renderingId = null;
+		this.currentDeltaTime = 0;
 
 		// rebinding.
 		this.requestFrameA = this.requestFrameA.bind(this);
 		this.requestFrameB = this.requestFrameB.bind(this);
 	}
 
-	getLayer(layerIndex: LayerIndex, layerType: LayerType) {
-		if (layerType === LayerType.DYNAMIC) {
-			return this.dynamicLayers.find((layer) => layer.layerIndex === layerIndex) || null;
-		} else {
-			return this.staticLayers.find((layer) => layer.layerIndex === layerIndex) || null;
-		}
+	getLayer(layerIndex: LayerIndex) {
+		return this.layers.find((layer) => layer.layerIndex === layerIndex) || null;
 	}
 
 	registerLayer(layer: IRenderingLayer) {
-		if (layer.layerType === LayerType.DYNAMIC) {
-			this.dynamicLayers.push(layer);
-		} else {
-			this.staticLayers.push(layer);
-		}
+		this.layers.push(layer);
 	}
 
 	start() {
@@ -117,12 +115,12 @@ export default class Engine implements IEngine {
 		if (!this.lastFrameRenderedTime) {
 			this.lastFrameRenderedTime = timestamp;
 		}
-		const deltaTime = timestamp - this.lastFrameRenderedTime;
+		this.currentDeltaTime = timestamp - this.lastFrameRenderedTime;
 		this.lastFrameRenderedTime = timestamp;
 
-		for (let i = 0; i < this.dynamicLayers.length; i++) {
-			this.dynamicLayers[i].update(deltaTime);
-			this.dynamicLayers[i].render();
+		for (this.layerCounter = 0; this.layerCounter < this.layers.length; this.layerCounter++) {
+			this.layers[this.layerCounter].update(this.currentDeltaTime);
+			this.layers[this.layerCounter].render();
 		}
 	}
 }

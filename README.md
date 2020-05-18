@@ -10,7 +10,7 @@
 ###### Initialization
 
 ```
-import Engine, { LayerType, RenderingLayer, IEntity } from '@zacktherrien/typescript-render-engine';
+import Engine, { StaticLayer, IEntity } from '@zacktherrien/typescript-render-engine';
 
 const engine = new Engine();
 ```
@@ -18,7 +18,8 @@ const engine = new Engine();
 ###### Creating layers
 ```
 // create a new layer.
-const backgroundLayer = new RenderingLayer(0, LayerType.STATIC);
+const backgroundZIndex = 0;
+const backgroundLayer = new StaticLayer(backgroundZIndex);
 
 // add the layer to the engine
 engine.registerLayer(backgroundLayer);
@@ -35,7 +36,10 @@ backgroundLayer.addEntity(terrain);
 
 ###### Start rendering
 ```
-// start rendering.
+// render static background:
+backgroundLayer.allowRenderOnNextFrame();
+
+// start rendering dynamic layers
 engine.start();
 ```
 
@@ -57,6 +61,7 @@ npm install @zacktherrien/typescript-render-engine
 
 * [Bouncing Square](https://zacktherrien.github.io/typescript-render-engine/squares/index.html)
 * [Pacman](https://zacktherrien.github.io/typescript-render-engine/pacman/index.html)
+* [Boids](https://github.com/ZackTherrien/boids)
 
 ## Documentation
 
@@ -67,20 +72,17 @@ npm install @zacktherrien/typescript-render-engine
 * `stop()` Stops rendering.
 * `registerLayer(layer: IRenderingLayer)` Add a layer to the engine
     * `layer` The layer to be added
-* `getLayer(layerIndex: LayerIndex, layerType: LayerType): IRenderingLayer` Get a previous registered layer.
+* `getLayer(layerIndex: LayerIndex): IRenderingLayer` Get a previous registered layer.
     * `layerIndex` a number representing the Z-Index of the layer.
-    * `layerType` whether the layer wanted is `STATIC` or `DYNAMIC`
 
 ### Class: RenderingLayer
 
 ###### Properties
 * `readonly layerIndex: LayerIndex` number representing the zindex of the layer
-* `readonly layerType: LayerType` whether a layer is `STATIC` or `DYNAMIC`
 
 ###### Methods
-* `constructor(layerIndex: LayerIndex, layerType: LayerType, entity?: Entity)` Creates a rendering layer.
+* `constructor(layerIndex: LayerIndex, initialWidth?: number, initialHeight?: number, initialX: number = 0, initialY: number = 0,)` Creates a rendering layer.
     * `layerIndex` Number representing the z-index of the layer on the screen.
-    * `layerType` Whether the layer is `STATIC` or `DYNAMIC`
     * `entity` An optional, default first entity of the layer.
 * `addEntity(entity: IEntity)` Add an entity to be rendered
     * `entity` The entity to be added
@@ -102,6 +104,22 @@ npm install @zacktherrien/typescript-render-engine
     * `x` the new x position of the layer.
     * `y` the new y position of the layer.
 
+### Class: DynamicLayer
+Will update and render all entities in the layer when a new frame becomes available
+
+### Class: StaticLayer
+Will render all entities in the layer when told via the `allowRenderOnNextFrame` function.
+
+###### Methods
+* `allowRenderOnNextFrame()` When the next frame becomes available, the render function will be called.
+
+### Class: DeferredLayer
+
+Once the `deferredTime` (in MS) has been reached, the next frame will update and render. After another `deferredTime` the layer will update and rerender.
+
+###### Methods
+* `constructor(deferredTime: number, layerIndex: LayerIndex, initialWidth?: number, initialHeight?: number, initialX: number = 0, initialY: number = 0,)` Creates a deferred rendering layer.
+
 ### Types
 
 * `RenderLayerFunction` Function signature of a layer's render function.
@@ -109,9 +127,6 @@ npm install @zacktherrien/typescript-render-engine
 * `RenderFunction` Function signature of an entity's render function.
 * `UpdateFunction` Function signature of an entity's update function.
 * `LayerIndex` Number representing the Z-Index of a layer.
-* `LayerType` Enum representing the type of layer.
-    * `STATIC` A static layer will **not** be updated or re-rendered every frame.
-    * `DYNAMIC` A dynamic layer will be updated then rendered every frame.
 * `ResizeMethod` Enum representing the resizing strategy of a layer
     * `FROM_ORIGIN` Resize the layer conserving the (0,0) point at the same position in the screen.
     * `FROM_CENTER` Resize the layer conserving the center point at the same position in the screen.
