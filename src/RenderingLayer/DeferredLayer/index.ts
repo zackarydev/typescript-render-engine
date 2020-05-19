@@ -35,10 +35,10 @@ export class DeferredLayer extends RenderingLayer implements IDeferredLayer {
 	}
 
 	update(deltaTime: number) {
+		this.elapsedTimeSinceRender += deltaTime;
 		if (this.elapsedTimeSinceRender > this.deferredTime) {
 			super.update(deltaTime);
 		}
-		this.elapsedTimeSinceRender += deltaTime;
 	}
 
 	render() {
