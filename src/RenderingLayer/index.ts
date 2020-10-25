@@ -22,7 +22,7 @@ export interface IRenderingLayer {
 	/**
 	 * Get the rendering layer's canvas context.
 	 */
-	getContext: () => CanvasRenderingContext2D;
+	getContext: () => CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
 
 	/**
 	 * Get the width of the layer
@@ -60,6 +60,8 @@ export interface IRenderingLayer {
 	 * @param entity Entity to be removed
 	 */
 	removeEntity(entity: IEntity): void;
+
+	attachOffscreenCanvas(offscreenCanvas: OffscreenCanvas, width: number, height: number): void;
 }
 
 export abstract class RenderingLayer implements IRenderingLayer {
@@ -71,7 +73,7 @@ export abstract class RenderingLayer implements IRenderingLayer {
 	/**
 	 * The canvas' 2D rendering context.
 	 */
-	readonly context: CanvasRenderingContext2D;
+	private context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
 
 	/**
 	 * Width of the layer in the document
@@ -96,7 +98,7 @@ export abstract class RenderingLayer implements IRenderingLayer {
 	/**
 	 * List of entities that are part of this rendering layer.
 	 */
-	private entities: IEntity[];
+	readonly entities: IEntity[];
 
 	/**
 	 * To prevent re-allocation of variables after each render/update loop,
@@ -122,10 +124,26 @@ export abstract class RenderingLayer implements IRenderingLayer {
 		this.entities = [];
 		this.entityCounter = 0;
 
-		this.width = initialWidth === undefined ? document.body.clientWidth + 1 : initialWidth;
-		this.height = initialHeight === undefined ? document.body.clientHeight + 1 : initialHeight;
 		this.x = initialX;
 		this.y = initialY;
+
+		if(self.document === undefined) {
+			(self as unknown as Worker).postMessage({
+				layerIndex,
+				width: initialWidth,
+				height: initialHeight,
+				x: initialX,
+				y: initialY,
+			});
+			this.context = null;
+			this.width = 0;
+			this.height = 0;
+			return;
+		}
+
+		this.width = initialWidth === undefined ? document.body.clientWidth + 1 : initialWidth;
+		this.height = initialHeight === undefined ? document.body.clientHeight + 1 : initialHeight;
+
 
 		const canvas = document.createElement('canvas');
 		canvas.style.position = 'absolute';
@@ -160,6 +178,10 @@ export abstract class RenderingLayer implements IRenderingLayer {
 		this.width = newWidth;
 		this.height = newHeight;
 
+		if(!this.context) {
+			return;
+		}
+
 		this.context.canvas.width = this.width;
 		this.context.canvas.height = this.height;
 
@@ -177,6 +199,13 @@ export abstract class RenderingLayer implements IRenderingLayer {
 
 		if (!this._isLayerWithinBounds()) {
 			throw new Error('Cannot position and resize a layer outside of document body.');
+		}
+		if(this.context instanceof OffscreenCanvasRenderingContext2D) {
+			return;
+		}
+
+		if(!this.context) {
+			return;
 		}
 
 		this.context.canvas.style.left = `${this.x}px`;
@@ -244,6 +273,9 @@ export abstract class RenderingLayer implements IRenderingLayer {
 	 * Clear the canvas' context.
 	 */
 	clear() {
+		if(!this.context) {
+			return;
+		}
 		this.context.clearRect(-1, -1, this.width, this.height);
 	}
 
@@ -264,10 +296,23 @@ export abstract class RenderingLayer implements IRenderingLayer {
 	 * Render all entities of this rendering layer after clearing.
 	 */
 	render() {
+		if(!this.context) {
+			return;
+		}
 		this.clear();
 		for (this.entityCounter = 0; this.entityCounter < this.entities.length; this.entityCounter++) {
 			this.entities[this.entityCounter].render(this.context);
 		}
+	}
+
+	attachOffscreenCanvas(offscreenCanvas: OffscreenCanvas, width: number, height: number) {
+		const offscreenContext = offscreenCanvas.getContext('2d');
+		if(!offscreenContext) {
+			throw new Error('Offscreen context not received?');
+		}
+		this.context = offscreenContext;
+
+		this.resize(width, height);
 	}
 
 	/**
@@ -296,6 +341,9 @@ export abstract class RenderingLayer implements IRenderingLayer {
 	 * Is the layer within the document bounds.
 	 */
 	private _isLayerWithinBounds() {
+		if(self.document === undefined) {
+			return true;
+		}
 		return (
 			this.width + this.x > document.body.clientWidth ||
 			this.height + this.y > document.body.clientHeight ||

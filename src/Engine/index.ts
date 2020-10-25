@@ -2,6 +2,20 @@ import { IRenderingLayer } from '../RenderingLayer';
 
 import { LayerIndex } from '../types';
 
+interface CreateLayerMessage {
+	layerIndex: number;
+	canvas: OffscreenCanvas;
+	width: number;
+	height: number;
+}
+
+interface OffscreenCanvasMessage {
+	data: {
+		type: 'INIT' | 'CREATE_LAYER';
+		data?: CreateLayerMessage;
+	}
+}
+
 export interface IEngine {
 	/**
 	 * Start rendering
@@ -60,7 +74,7 @@ export default class Engine implements IEngine {
 	 */
 	private currentDeltaTime: number;
 
-	constructor() {
+	constructor(asOffscreen: boolean = false) {
 		this.layers = [];
 		this.layerCounter = 0;
 
@@ -73,6 +87,11 @@ export default class Engine implements IEngine {
 		// rebinding.
 		this.requestFrameA = this.requestFrameA.bind(this);
 		this.requestFrameB = this.requestFrameB.bind(this);
+
+		// offscreen handling:
+		if(asOffscreen) {
+			self.addEventListener('message', this.handleOffscreenMessage.bind(this));
+		}
 	}
 
 	getLayer(layerIndex: LayerIndex) {
@@ -85,13 +104,13 @@ export default class Engine implements IEngine {
 
 	start() {
 		this.shouldRender = true; // say we want to animate.
-		this.renderingId = window.requestAnimationFrame(this.requestFrameA);
+		this.renderingId = self.requestAnimationFrame(this.requestFrameA);
 	}
 
 	stop() {
 		this.shouldRender = false;
 		if (this.renderingId) {
-			window.cancelAnimationFrame(this.renderingId);
+			self.cancelAnimationFrame(this.renderingId);
 		}
 	}
 
@@ -99,7 +118,7 @@ export default class Engine implements IEngine {
 		this.render(timestamp);
 
 		if (this.shouldRender) {
-			this.renderingId = window.requestAnimationFrame(this.requestFrameB);
+			this.renderingId = self.requestAnimationFrame(this.requestFrameB);
 		}
 	}
 
@@ -107,7 +126,7 @@ export default class Engine implements IEngine {
 		this.render(timestamp);
 
 		if (this.shouldRender) {
-			this.renderingId = window.requestAnimationFrame(this.requestFrameA);
+			this.renderingId = self.requestAnimationFrame(this.requestFrameA);
 		}
 	}
 
@@ -122,5 +141,24 @@ export default class Engine implements IEngine {
 			this.layers[this.layerCounter].update(this.currentDeltaTime);
 			this.layers[this.layerCounter].render();
 		}
+	}
+
+	handleOffscreenMessage({ data }: OffscreenCanvasMessage) {
+		if(data.type !== 'CREATE_LAYER' || !data.data) {
+			return;
+		}
+		const {
+			layerIndex,
+			width,
+			height,
+			canvas
+		} = data.data;
+		console.log('Create layer', layerIndex);
+
+		const layer = this.getLayer(layerIndex);
+		if(!layer) {
+			throw new Error('layer not found');
+		}
+        layer.attachOffscreenCanvas(canvas, width, height);
 	}
 }

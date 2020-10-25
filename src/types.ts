@@ -11,7 +11,7 @@ export type UpdateLayerFunction = (deltaTime: number) => void;
 /**
  * The function used to render entities within a layer
  */
-export type RenderFunction = (context: CanvasRenderingContext2D) => void;
+export type RenderFunction = (context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void;
 
 /**
  * Function used to update entities within a layer
